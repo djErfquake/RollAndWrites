@@ -42,6 +42,22 @@ public class Die : MonoBehaviour
         }
     }
 
+    public void SetFace(DieFace newFace)
+    {
+        currentFace = newFace;
+
+        if (textComponent != null)
+        {
+            textComponent.text = currentFace.text;
+        }
+
+        if (imageComponent != null)
+        {
+            imageComponent.color = currentFace.color;
+            imageComponent.sprite = currentFace.sprite;
+        }
+    }
+
 
     public void Hide()
     {

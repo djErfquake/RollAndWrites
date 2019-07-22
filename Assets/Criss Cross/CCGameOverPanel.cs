@@ -8,8 +8,8 @@ public class CCGameOverPanel : MonoBehaviour
 {
     public GameObject gameOverPanel;
     public TextMeshProUGUI gameOverText;
-    public TextMeshProUGUI yourScoreText, highScoreText;
-    public GameObject retryButton, quitButton;
+    public TextMeshProUGUI yourScoreText, puzzleScoreText, highScoreText;
+    public GameObject newButton, sameButton, quitButton;
     private CanvasGroup gameOverGroup;
 
 
@@ -21,11 +21,12 @@ public class CCGameOverPanel : MonoBehaviour
 
 
 
-    public void Setup(System.Action retryAction)
+    public void Setup(System.Action retryAction, System.Action retrySameAction)
     {
         gameOverGroup = gameOverPanel.GetComponent<CanvasGroup>();
 
-        retryButton.GetComponent<ChunkyButton>().onClick.AddListener(() => { retryAction(); });
+        newButton.GetComponent<ChunkyButton>().onClick.AddListener(() => { retryAction(); });
+        sameButton.GetComponent<ChunkyButton>().onClick.AddListener(() => { retrySameAction(); });
         quitButton.GetComponent<ChunkyButton>().onClick.AddListener(() => { Application.Quit(); });
         ExhibitUtilities.AddEventTrigger(gameOverPanel, UnityEngine.EventSystems.EventTriggerType.PointerDown, () => { gameOverGroup.alpha = 0; });
         ExhibitUtilities.AddEventTrigger(gameOverPanel, UnityEngine.EventSystems.EventTriggerType.PointerUp, () => { gameOverGroup.alpha = 1; });
@@ -35,10 +36,11 @@ public class CCGameOverPanel : MonoBehaviour
 
 
 
-    public void Show(int score, int highScore)
+    public void Show(int score, int puzzleScore, int highScore)
     {
         yourScoreText.text = "Your Score: " + score.ToString();
-        highScoreText.text = "High Score: " + highScore.ToString();
+        puzzleScoreText.text = "Best Puzzle's Score: " + puzzleScore.ToString();
+        highScoreText.text = "Best High Score: " + highScore.ToString();
 
         gameOverTransitioning = true;
         gameOverPanel.SetActive(true);

@@ -35,6 +35,7 @@ public class CrissCross : MonoBehaviour
 
     // variables
     private int totalScore = 0;
+    private int puzzleScore = -999;
     private Dictionary<int, int> scoringValues;
 
     private int diceSet = 0;
@@ -43,12 +44,17 @@ public class CrissCross : MonoBehaviour
     private Die selectedDie = null;
     private DieValueViewer selectedSquare = null;
 
-    
+    [Header("Retry Same")]
+    public bool retrySame = true;
+    private CCRecorder recorder;
+    public int recordDieIndex = 0;
 
 
 
     private void Start()
     {
+        recorder = new CCRecorder();
+
         scoringValues = new Dictionary<int, int>();
         scoringValues.Add(0, 0);
         scoringValues.Add(1, 0);
@@ -73,7 +79,7 @@ public class CrissCross : MonoBehaviour
 
 
         // game over panel
-        gameOverPanel.Setup(RetryButtonPressed);
+        gameOverPanel.Setup(RetryButtonPressed, RetrySameButtonPressed);
 
 
         // start game
@@ -90,6 +96,14 @@ public class CrissCross : MonoBehaviour
 
     private void RetryButtonPressed()
     {
+        retrySame = false;
+        puzzleScore = 0;
+        SetupForGame();
+    }
+
+    private void RetrySameButtonPressed()
+    {
+        retrySame = true;
         SetupForGame();
     }
 
@@ -102,7 +116,12 @@ public class CrissCross : MonoBehaviour
         gameOverPanel.Hide();
 
         for (int i = 0; i < gameGrid.Length; i++) { gameGrid[i].SetToUnused(); }
-        GetSquare(0, 0).SetViewAnimated(dice[0].RandomFace());
+
+        DieFace startingFace = dice[0].RandomFace();
+        if (recorder.dice[0] == null || !retrySame) { recorder.dice[0] = startingFace; }
+        else { startingFace = recorder.dice[0]; }
+        GetSquare(0, 0).SetViewAnimated(startingFace);
+        recordDieIndex = 1;
 
         selectedDie = null;
         selectedSquare = null;
@@ -391,19 +410,26 @@ public class CrissCross : MonoBehaviour
 
     private void GameEnded()
     {
-        int highScore = 0;
+        int highScore = -999;
         if (PlayerPrefs.HasKey("CrissCrossHighScore")) { highScore = PlayerPrefs.GetInt("CrissCrossHighScore"); }
 
+        if (totalScore > puzzleScore) { puzzleScore = totalScore; }
         if (totalScore > highScore) { highScore = totalScore; PlayerPrefs.SetInt("CrissCrossHighScore", highScore); }
 
-        gameOverPanel.Show(totalScore, highScore);
+        gameOverPanel.Show(totalScore, puzzleScore, highScore);
     }
 
 
 
     private void RollDice()
     {
-        for (int i = 0; i < dice.Length; i++) { dice[i].Show(); dice[i].Roll(); }
+        for (int i = 0; i < dice.Length; i++)
+        { 
+            dice[i].Show();
+            if (recorder.dice[recordDieIndex] == null || !retrySame) { dice[i].Roll(); recorder.dice[recordDieIndex] = dice[i].GetFace(); }
+            else { dice[i].SetFace(recorder.dice[recordDieIndex]); }
+            recordDieIndex++;
+        }
     }
 
 
